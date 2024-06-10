@@ -43,7 +43,7 @@
         name: php8.3-fpm
         state: started
         enabled: yes
-    
+
     - name: Install PostgreSQL
       apt:
         name: postgresql
@@ -55,26 +55,26 @@
         state: started
         enabled: yes
 
+    - name: Get PostgreSQL version
+      shell: "psql -V | awk '{print $3}' | cut -d '.' -f1,2"
+      register: postgresql_version
+
     - name: Set PostgreSQL admin user password
       shell: sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgres_password }}';"
       vars:
-        postgres_password: "your_postgres_password"
+        postgres_password: "{{ postgres_password }}"
 
     - name: Allow remote connections to PostgreSQL
       lineinfile:
-        path: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+        path: "/etc/postgresql/{{ postgresql_version.stdout }}/main/postgresql.conf"
         regexp: '^#?(listen_addresses\s*=\s*)\S+'
         line: "listen_addresses = '*'"
-      vars:
-        postgresql_version: 12  # Ganti dengan versi PostgreSQL yang sesuai
 
     - name: Configure PostgreSQL to accept all IP addresses
       lineinfile:
-        path: /etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf
-        insertafter: 'IPv4 local connections:'
-        line: 'host    all             all             0.0.0.0/0            md5'
-      vars:
-        postgresql_version: 12  # Ganti dengan versi PostgreSQL yang sesuai
+        path: "/etc/postgresql/{{ postgresql_version.stdout }}/main/pg_hba.conf"
+        insertafter: "IPv4 local connections:"
+        line: "host    all             all             0.0.0.0/0            md5"
 
     - name: Restart PostgreSQL to apply changes
       systemd:
