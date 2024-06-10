@@ -44,9 +44,6 @@
         state: started
         enabled: yes
 
-- hosts: dbservers
-  become: yes
-  tasks:
     - name: Update and upgrade apt packages
       apt:
         update_cache: yes
@@ -63,13 +60,35 @@
         state: started
         enabled: yes
 
-    - name: Secure MariaDB installation
-      mysql_secure_installation:
+    - name: Set root password for MariaDB
+      mysql_user:
+        name: root
+        host: localhost
+        password: '12345678' # your root password
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: present
+        priv: '*.*:ALL,GRANT'
+
+    - name: Remove anonymous users
+      mysql_user:
+        name: ''
+        host: localhost
         login_user: root
-        login_password: ''
-        new_password: 'your_root_password' # your root password
-        confirm_password: 'yes'
-        remove_anonymous_user: 'yes'
-        disallow_root_login_remotely: 'yes'
-        remove_test_db: 'yes'
-        ensure: present
+        login_password: '12345678' # your root password
+        state: absent
+
+    - name: Remove test database
+      mysql_db:
+        name: test
+        state: absent
+        login_user: root
+        login_password: '12345678' # your root password
+
+    - name: Reload privilege tables
+      mysql_user:
+        name: root
+        host: localhost
+        password: '12345678' # your root password
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: present
+        priv: '*.*:ALL,GRANT'
