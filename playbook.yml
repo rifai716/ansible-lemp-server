@@ -49,6 +49,11 @@
         update_cache: yes
         upgrade: dist
 
+    - name: Install PyMySQL
+      apt:
+        name: python3-pymysql
+        state: present
+
     - name: Install MariaDB server
       apt:
         name: mariadb-server
