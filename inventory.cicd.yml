@@ -2,7 +2,7 @@ all:
   hosts:
     webservers:
       ansible_connection: ssh
-      ansible_host: "203.145.34.56"
+      ansible_host: "103.176.78.254"
       ansible_port: 22
       ansible_user: "polindra"
       ansible_password: "{{ ansible_password }}"

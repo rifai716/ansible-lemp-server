@@ -43,57 +43,40 @@
         name: php8.3-fpm
         state: started
         enabled: yes
-
-    - name: Update and upgrade apt packages
+    
+    - name: Install PostgreSQL
       apt:
-        update_cache: yes
-        upgrade: dist
-
-    - name: Install PyMySQL
-      apt:
-        name: python3-pymysql
+        name: postgresql
         state: present
 
-    - name: Install MariaDB server
-      apt:
-        name: mariadb-server
-        state: present
-
-    - name: Start and enable MariaDB service
+    - name: Ensure PostgreSQL service is running and enabled
       systemd:
-        name: mariadb
+        name: postgresql
         state: started
         enabled: yes
 
-    - name: Set root password for MariaDB
-      mysql_user:
-        name: root
-        host: localhost
-        password: '12345678' # your root password
-        login_unix_socket: /var/run/mysqld/mysqld.sock
-        state: present
-        priv: '*.*:ALL,GRANT'
+    - name: Set PostgreSQL admin user password
+      shell: sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgres_password }}';"
+      vars:
+        postgres_password: "your_postgres_password"
 
-    - name: Remove anonymous users
-      mysql_user:
-        name: ''
-        host: localhost
-        login_user: root
-        login_password: '12345678' # your root password
-        state: absent
+    - name: Allow remote connections to PostgreSQL
+      lineinfile:
+        path: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+        regexp: '^#?(listen_addresses\s*=\s*)\S+'
+        line: "listen_addresses = '*'"
+      vars:
+        postgresql_version: 12  # Ganti dengan versi PostgreSQL yang sesuai
 
-    - name: Remove test database
-      mysql_db:
-        name: test
-        state: absent
-        login_user: root
-        login_password: '12345678' # your root password
+    - name: Configure PostgreSQL to accept all IP addresses
+      lineinfile:
+        path: /etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf
+        insertafter: 'IPv4 local connections:'
+        line: 'host    all             all             0.0.0.0/0            md5'
+      vars:
+        postgresql_version: 12  # Ganti dengan versi PostgreSQL yang sesuai
 
-    - name: Reload privilege tables
-      mysql_user:
-        name: root
-        host: localhost
-        password: '12345678' # your root password
-        login_unix_socket: /var/run/mysqld/mysqld.sock
-        state: present
-        priv: '*.*:ALL,GRANT'
+    - name: Restart PostgreSQL to apply changes
+      systemd:
+        name: postgresql
+        state: restarted
