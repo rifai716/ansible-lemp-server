@@ -2,7 +2,7 @@ all:
   hosts:
     webservers:
       ansible_connection: ssh
-      ansible_host: "103.176.78.254"
+      ansible_host: "{{ ansible_host }}"
       ansible_port: 22
-      ansible_user: "polindra"
+      ansible_user: "{{ ansible_user }}"
       ansible_private_key_file: "/Users/ahmadrifai/.ssh/id_cloudhost_rifai_cicd"

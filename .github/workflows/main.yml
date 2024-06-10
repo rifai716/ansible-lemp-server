@@ -30,7 +30,7 @@ jobs:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
         run: |
-          ansible-playbook -i inventory.cicd.yml playbook.yml --extra-vars "ansible_password=${{ secrets.ANSIBLE_SSH_PASS }}"
+          ansible-playbook -i inventory.cicd.yml playbook.yml --extra-vars "ansible_host=${{ secrets.ANSIBLE_HOST }} ansible_user=${{ secrets.ANSIBLE_USER }} ansible_password=${{ secrets.ANSIBLE_SSH_PASS }}"
 
       - name: Clean up
         run: rm -rf ./*
