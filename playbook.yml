@@ -1,0 +1,75 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Add PHP PPA repository
+      apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+
+    - name: Install PHP 8.3 and required extensions
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - php8.3
+        - php8.3-fpm
+        - php8.3-mysql
+        - php8.3-cli
+        - php8.3-common
+        - php8.3-xml
+        - php8.3-mbstring
+        - php8.3-curl
+        - php8.3-zip
+
+    - name: Start and enable PHP-FPM service
+      systemd:
+        name: php8.3-fpm
+        state: started
+        enabled: yes
+
+- hosts: dbservers
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install MariaDB server
+      apt:
+        name: mariadb-server
+        state: present
+
+    - name: Start and enable MariaDB service
+      systemd:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Secure MariaDB installation
+      mysql_secure_installation:
+        login_user: root
+        login_password: ''
+        new_password: 'your_root_password' # your root password
+        confirm_password: 'yes'
+        remove_anonymous_user: 'yes'
+        disallow_root_login_remotely: 'yes'
+        remove_test_db: 'yes'
+        ensure: present
