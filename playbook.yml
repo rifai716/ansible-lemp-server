@@ -60,9 +60,9 @@
       register: postgresql_version
 
     - name: Set PostgreSQL admin user password
-      shell: sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgres_password }}';"
+      shell: sudo -u postgres psql -c "ALTER USER postgres PASSWORD '12345678';"
       vars:
-        postgres_password: "{{ postgres_password }}"
+        postgres_password: "12345678"
 
     - name: Allow remote connections to PostgreSQL
       lineinfile:
