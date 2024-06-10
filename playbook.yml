@@ -44,39 +44,3 @@
         state: started
         enabled: yes
 
-    - name: Install PostgreSQL
-      apt:
-        name: postgresql
-        state: present
-
-    - name: Ensure PostgreSQL service is running and enabled
-      systemd:
-        name: postgresql
-        state: started
-        enabled: yes
-
-    - name: Get PostgreSQL version
-      shell: "psql -V | awk '{print $3}' | cut -d '.' -f1,2"
-      register: postgresql_version
-
-    - name: Set PostgreSQL admin user password
-      shell: sudo -u postgres psql -c "ALTER USER postgres PASSWORD '12345678';"
-      vars:
-        postgres_password: "12345678"
-
-    - name: Allow remote connections to PostgreSQL
-      lineinfile:
-        path: "/etc/postgresql/{{ postgresql_version.stdout }}/main/postgresql.conf"
-        regexp: '^#?(listen_addresses\s*=\s*)\S+'
-        line: "listen_addresses = '*'"
-
-    - name: Configure PostgreSQL to accept all IP addresses
-      lineinfile:
-        path: "/etc/postgresql/{{ postgresql_version.stdout }}/main/pg_hba.conf"
-        insertafter: "IPv4 local connections:"
-        line: "host    all             all             0.0.0.0/0            md5"
-
-    - name: Restart PostgreSQL to apply changes
-      systemd:
-        name: postgresql
-        state: restarted
